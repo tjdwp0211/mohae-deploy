@@ -85,7 +85,6 @@ function Post() {
   const loading = useSelector((state: RootState) => state.post.loading);
   const [redirectLogin, setRedirectLogin] = useState(false);
   const [runOutRefreshToken, setRunOutRefreshToken] = useState(false);
-  const [imgIndex, setImgIndex] = useState(0);
   const location = useLocation();
 
   const btnClick = {
@@ -145,7 +144,7 @@ function Post() {
         .patch(URL, null, config)
         .then(res => {
           setView({ ...view, isDeadline: true });
-          dispatch(setIsDeadline());
+          getPostingData();
         })
         .catch(err => console.log('err', err));
     }
