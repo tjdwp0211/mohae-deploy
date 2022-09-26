@@ -1,5 +1,3 @@
-/** @format */
-
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import { css, cx } from '@emotion/css';
 import { useSelector } from 'react-redux';
@@ -13,12 +11,19 @@ import axios from 'axios';
 interface Object {
   [key: string]: any;
 }
+
+interface PopupInfo {
+  view: boolean;
+  message: string;
+}
 interface Props {
   [key: string]: any;
-  setPopupView: Dispatch<SetStateAction<boolean>>;
+  setPopupInfo: Dispatch<
+    SetStateAction<{ register: PopupInfo; findPassword: PopupInfo }>
+  >;
 }
 
-export default function SelectInfo({ part, next, setPopupView }: Props) {
+export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
   const [open, setOpen] = useState<Object>({
     one: false,
     two: false,
@@ -150,6 +155,16 @@ export default function SelectInfo({ part, next, setPopupView }: Props) {
     setPhoneBehindNumber(e.target.value);
   };
 
+  const onCategoryDelete = (category: string) => {
+    setIntersted(intersted.filter((el: string) => el !== category));
+    setInfo({
+      ...info,
+      intersted: info.intersted.filter(
+        (el: number) => el !== text.categories.indexOf(category) + 2,
+      ),
+    });
+  };
+
   const onSubmit = () => {
     const body = {
       ...registInfo,
@@ -168,14 +183,16 @@ export default function SelectInfo({ part, next, setPopupView }: Props) {
       })
       .then(res => {
         if (res.data.statusCode >= 200 && res.data.statusCode <= 204) {
-          setPopupView(true);
-          // sessionStorage.setItem('userEmail', res.data.response.email)
+          setPopupInfo({
+            ...popupInfo,
+            register: { ...popupInfo.register, view: true },
+          });
         } else {
           alert('다시 가입 해주세요');
         }
       })
       .catch(err => {
-        console.log('err :>> ', err);
+        alert(err.response.data.error.message);
       });
   };
 
@@ -189,13 +206,16 @@ export default function SelectInfo({ part, next, setPopupView }: Props) {
       })
       .then(res => {
         if (res.data.statusCode >= 200 && res.data.statusCode <= 204) {
-          setPopupView(true);
+          setPopupInfo({
+            ...popupInfo,
+            register: { ...popupInfo.register, view: true },
+          });
         } else {
           alert('다시 가입 해주세요');
         }
       })
       .catch(err => {
-        console.log('err :>> ', err);
+        alert(err.response.data.error.message);
       });
   };
 
@@ -474,6 +494,9 @@ export default function SelectInfo({ part, next, setPopupView }: Props) {
                               intersted={info.intersted}
                             >
                               {el}
+                              <CloseButton onClick={() => onCategoryDelete(el)}>
+                                <Img src="/img/close-dark2.png" />
+                              </CloseButton>
                             </Category>
                           </CategoryWrapper>
                         ))
@@ -532,11 +555,9 @@ const DemoSelectBox = styled.div`
   width: 100%;
   height: 240px;
   overflow: hidden;
-
   &::-webkit-scrollbar {
     display: none;
   }
-
   background-color: white;
   display: flex;
   flex-direction: column;
@@ -554,7 +575,6 @@ const SelectButton = styled.button`
   button {
     color: ${color.main};
   }
-
   ${shadow.normal};
 `;
 
@@ -647,7 +667,7 @@ const Category = styled.button<{ select: number; intersted: number[] }>`
   align-items: center;
   border-radius: 6px;
   box-shadow: 0px 0px 8px 0px #84838d;
-
+  position: relative;
   span {
     color: ${props =>
       props.intersted.includes(props.select) ? color.main : '#a7a7ad'};
@@ -666,6 +686,14 @@ const CategoryWrapper = styled.div`
   width: 100%;
 `;
 
+const CloseButton = styled.div`
+  width: 13px;
+  height: 13px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+`;
+
 const Button = styled.button`
   width: 480px;
   height: 52px;
@@ -675,7 +703,6 @@ const Button = styled.button`
   font-size: 14px;
   font-weight: 400;
   color: #ffffff;
-
   &:disabled {
     background-color: #e7e7e8;
   }

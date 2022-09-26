@@ -18,7 +18,7 @@ interface IMAGE {
   File: FormData | any;
 }
 
-export default function InputImg({ imgs, edit, inline }: Props) {
+export default function InputImg({ imgs, inline }: Props) {
   const clone =
     imgs &&
     imgs.map((img: any) => ({
@@ -144,6 +144,7 @@ export default function InputImg({ imgs, edit, inline }: Props) {
     // formData 내부의 파일 명
     for (let i = 0; i < formDataLenth; i++) {
       const target = imagesNumber.next().value[1];
+      console.log(imagesNumber)
       if (targetName !== target.name) {
         newFormData.append('image', target);
       }

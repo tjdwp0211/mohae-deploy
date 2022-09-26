@@ -103,16 +103,12 @@ export default function Category({
       :hover {
         background-color: ${color.subtle};
       }
-      :active {
-        background-color: ${color.lighter};
-        color: white !important;
-      }
     `,
   };
 
   return !(shape === 'row') ? (
     <Link
-      to={`/boards/${id}`}
+      to={`/boards/categories/${id}`}
       className={cx(style[shape])}
       onClick={String(id) !== no ? resetPageInfo : undefined}
     >
@@ -127,13 +123,8 @@ export default function Category({
       {!(shape === 'square') && <div>{name || 'Category'}</div>}
     </Link>
   ) : (
-    <Link
-      to={`/${name}`}
-      id={id}
-      onClick={onClick}
-      className={cx(style[shape])}
-    >
+    <div id={id} onClick={onClick} className={cx(style[shape])}>
       {name || 'Category'}
-    </Link>
+    </div>
   );
 }

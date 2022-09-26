@@ -9,35 +9,31 @@ import { useNavigate } from 'react-router-dom';
 import ModifyProfile from '../../modifyProfile';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { remove_user } from '../../../redux/user/reducer';
+import { getUserData, remove_user } from '../../../redux/user/reducer';
 import { AppDispatch } from '../../../redux/root';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../redux/root';
+import PostSlide from './PostSlide';
 
 interface Props {
   [key: string]: any;
 }
 
-export default function MySelf({
-  text,
-  userInfo,
-  posts,
-  actions,
-  checkSelf,
-}: Props) {
+export default function MySelf({ text, posts, actions, checkSelf }: Props) {
   const navigate = useNavigate();
-  const tokenInfo = useSelector((state: RootState) => state.user.user);
+  const userInfo = useSelector((state: RootState) => state.user.user);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const dispatch = useDispatch<AppDispatch>();
 
   const interested =
-    userInfo && userInfo.categories ? (
+    userInfo && userInfo.categories.length ? (
       userInfo.categories.map((category: any, index: number) => (
         <Box key={index} size={[80, 80]}>
           <Category
             shape={'square'}
             img={`/img/category-${category.no - 1}.png`}
             name={category.name}
+            id={category.no}
           />
         </Box>
       ))
@@ -47,9 +43,15 @@ export default function MySelf({
       </Intersted>
     );
 
+  useEffect(() => {
+    if (!isOpen) {
+      dispatch(getUserData(userInfo.userNo));
+    }
+  }, [isOpen]);
+
   return (
     <div className={cx(style)}>
-      {isOpen && <ModifyProfile userInfo={userInfo} />}
+      {isOpen && <ModifyProfile setIsOpen={setIsOpen} />}
       <div className={'user'}>
         <Box className={'box'} size={[304, 724]}>
           <div className="profileHeader">
@@ -71,9 +73,9 @@ export default function MySelf({
             <Profile
               size={146}
               img={
-                (tokenInfo.photo_url !== null &&
+                (userInfo.photo_url !== null &&
                   'https://d2ffbnf2hpheay.cloudfront.net/' +
-                    tokenInfo.photo_url) ||
+                    userInfo.photo_url) ||
                 '/img/profile.png'
               }
               noneClick
@@ -130,18 +132,19 @@ export default function MySelf({
           </div>
           <div className={'section'}>
             <div className={'title'}>{text.resume.give}</div>
-            <Slide
+            <PostSlide
               outsideBtn
               checkSelf={checkSelf}
               viewNumber={3}
               items={posts.profileToHelp}
               action={actions.toHelp}
               marginRight={32}
+              isHelpPost
             />
           </div>
           <div className={'section'}>
             <div className={'title'}>{text.resume.got}</div>
-            <Slide
+            <PostSlide
               outsideBtn
               checkSelf={checkSelf}
               viewNumber={3}

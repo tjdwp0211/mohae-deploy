@@ -94,7 +94,9 @@ const Agreement = ({ next }: Object) => {
         ) : (
           <CheckBox onClick={() => setAllCheck(!allCheck)} />
         )}
-        <span>위 약관에 모두 동의합니다</span>
+        <span onClick={() => setAllCheck(!allCheck)}>
+          위 약관에 모두 동의합니다
+        </span>
       </CheckItem>
       <Button
         onClick={onClick}
@@ -109,6 +111,7 @@ const Agreement = ({ next }: Object) => {
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+  height: 25em;
 
   h1 {
     font-size: 16px;
@@ -122,12 +125,14 @@ const CheckItem = styled.div`
   display: flex;
   align-items: center;
   flex: 1;
+  margin-bottom: 20px;
 
   span {
     font-weight: 400;
     font-size: 14px;
     color: #84838d;
     margin-left: 8px;
+    cursor: pointer;
   }
 `;
 const CheckBox = styled.div`
@@ -157,7 +162,7 @@ const CheckDone = styled.div`
 
 const Button = styled.button`
   width: 480px;
-  height: 52px;
+  padding: 15px;
   border-radius: 6px;
   background-color: #ff445e;
   box-shadow: 0px 0px 8px 0px #84838d;

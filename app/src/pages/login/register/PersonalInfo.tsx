@@ -26,13 +26,13 @@ export default function PersonalInfo({ part, next }: Object) {
     title: {
       name: '이름',
       email: '이메일',
-      password: '비밀먼호',
+      password: '비밀번호',
       nickname: '닉네임',
     },
     placeholder: {
       name: '이름을 입력해 주세요.',
       email: '이메일을 입력해 주세요.',
-      password: '비밀먼호를 입력해 주세요.',
+      password: '비밀번호를 입력해 주세요.',
       checkPassword: '비밀번호를 다시 한번 입력해 주세요.',
       nickname: '닉네임을 입력해 주세요. (3 ~ 8자)',
     },
@@ -168,7 +168,6 @@ export default function PersonalInfo({ part, next }: Object) {
 
   const testInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const target = e.currentTarget.id;
-    console.log('target :>> ', target);
     e.preventDefault();
     e.stopPropagation();
     setInputValue({ ...inputValue, [target]: e.currentTarget.value });
@@ -218,10 +217,18 @@ export default function PersonalInfo({ part, next }: Object) {
     e.preventDefault();
     e.stopPropagation();
 
+    const userInputValueCheck =
+      inputValue.emailCompany !== '이메일 선택'
+        ? `${inputValue.email.replace(
+            /@naver.com$|@daum.net$|@gmail.com$|@nate.com$/g,
+            '',
+          )}@${inputValue.emailCompany}`
+        : inputValue.email;
+
     const finalRegistInfo: Object = {
       ...registInfo,
       ...inputValue,
-      email: `${inputValue.email}@${inputValue.emailCompany}`,
+      email: userInputValueCheck,
     };
     delete finalRegistInfo.emailCompany;
     delete finalRegistInfo.checkPassword;

@@ -2,10 +2,9 @@
 
 import { cx, css } from '@emotion/css';
 import { useState } from 'react';
-import { Img, NewPost } from '../../../components';
+import { Img, NewPost, Poster } from '../../../components';
 import { shadow } from '../../../styles';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../redux/root';
 import { spec_create } from '../../../redux/modal/reducer';
@@ -21,13 +20,13 @@ interface PARAMS {
 }
 
 export default function Slide({
-  onClick,
   outsideBtn,
   items,
   action,
   marginRight,
   viewNumber,
   checkSelf,
+  linkTo,
 }: Props) {
   const [sector, setSector] = useState(0),
     dispatch = useDispatch(),
@@ -152,6 +151,8 @@ export default function Slide({
         .add-img {
           width: 24px;
           height: 24px;
+          margin-top: 11px;
+          margin-bottom: 6px;
           transform: rotate(45deg);
         }
       }
@@ -218,7 +219,7 @@ export default function Slide({
     if (items && items.length) {
       return items.map((contents: string, index: number) => (
         <div className={'board'} key={index}>
-          <NewPost page={'inSpec'} board={contents} />
+          <NewPost page={'inSpec'} board={contents} linkTo={linkTo} />
         </div>
       ));
     } else if (checkSelf === 'false') {
@@ -250,7 +251,9 @@ export default function Slide({
                   <div className={'add-img'}>
                     <Img src={'/img/close.png'} />
                   </div>
-                  <div>{'스펙 등록하기'}</div>
+                  {!items.length && (
+                    <div className="spec-register">{'스펙 등록하기'}</div>
+                  )}
                 </button>
               )}
               {viewPosts()}

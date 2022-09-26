@@ -26,6 +26,7 @@ import Inquire from './pages/inquire/inquire';
 import InquireSuccess from './pages/inquire/inquireSuccess';
 import Notice from './pages/faq/notice/Notice';
 import ChangePassword from './pages/login/findPassword/Container';
+import getToken, { getAccessToken } from './utils/getToken';
 
 injectGlobal`
   * {
@@ -74,28 +75,32 @@ injectGlobal`
 `;
 
 const App: React.SFC = () => {
+  const token = getAccessToken();
   return (
     <Router>
       <Routes>
-        <Route path="*" element={<Navigate to="/" replace />} />
         <Route path={'/'} element={<Layout main component={<Home />} />} />
         <Route path={'/hg'} element={<Layout component={<HG />} />} />
         <Route
-          path={'/boards/:no'}
+          path={'/boards/categories/:no'}
           element={<Layout component={<Board />} />}
         />
         <Route
           path={'/mypage/:no'}
-          element={<Layout component={<MyPage />} />}
+          element={
+            <Layout
+              component={token ? <MyPage /> : <Navigate replace to="/" />}
+            />
+          }
         />
         <Route path={'/spec/:no'} element={<Layout component={<Spec />} />} />
         <Route path={'/post/:no'} element={<Layout component={<Post />} />} />
         <Route
-          path={'/createpost'}
+          path={'/create/post'}
           element={<Layout component={<CreateAndEditPost type={'create'} />} />}
         />
         <Route
-          path={'/edit/:no'}
+          path={'/edit/post/:no'}
           element={<Layout component={<CreateAndEditPost type={'edit'} />} />}
         />
         <Route

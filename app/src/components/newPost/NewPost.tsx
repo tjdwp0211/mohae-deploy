@@ -2,22 +2,19 @@
 
 import { color, radius, font, shadow } from '../../styles';
 import { css, cx } from '@emotion/css';
-import Img from '../img/Img';
+import styled from '@emotion/styled';
 import MarkBox from '../markbox/MarkBox';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../redux/root';
-import { Link } from 'react-router-dom';
+import { AppDispatch, RootState } from '../../redux/root';
 import { spec_visit } from '../../redux/modal/reducer';
-import { get_spec_info } from '../../redux/spec/reducer';
-import { ENDPOINT } from '../../utils/ENDPOINT';
-import setInterceptors from '../../apis/common/setInterceptors';
-import { customAxios } from '../../apis/instance';
+import { getDetailSpec } from '../../redux/spec/reducer';
+import {} from 'react-router-dom';
 
 interface Props {
   [key: string]: any;
 }
 
-export default function NewPost({ page, board }: Props) {
+export default function NewPost({ page, board, linkTo }: Props) {
   const text: { [key: string]: any } = {
     isOver: 'DAY',
   };
@@ -39,7 +36,7 @@ export default function NewPost({ page, board }: Props) {
     },
     inSpec: {
       size: '120',
-      fontSize: '14',
+      fontSize: '12',
       padding: css`
         padding: 16px;
       `,
@@ -91,13 +88,26 @@ export default function NewPost({ page, board }: Props) {
       display: flex;
       justify-content: center;
       align-items: center;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+      }
+      .logo {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .mark {
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
       & > * {
         transition: 0.3s all ease-in-out;
         transform: scale(1);
-      }
-      > .logo {
-        width: 60px;
-        height: 45px;
       }
 
       :hover {
@@ -231,45 +241,36 @@ export default function NewPost({ page, board }: Props) {
   ) : (
     <> </>
   );
-
   const isOpenSpecVisit = useSelector(
     (state: RootState) => state.modal.openSpecVisit,
   );
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const openModal = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     dispatch(spec_visit(!isOpenSpecVisit));
     if (page === 'inSpec') {
-      setInterceptors(customAxios)
-        .get(`${ENDPOINT}/specs/spec/${board.no}`)
-        .then(res => {
-          if (res.data.statusCode >= 200 && res.data.statusCode <= 204) {
-            dispatch(get_spec_info(res.data.response));
-          }
-        })
-        .catch(err => {
-          console.log('err :>> ', err);
-        });
+      dispatch(getDetailSpec(board.no));
     }
   };
 
+  const handleOnClick = () => {
+    return linkTo
+      ? () => (window.location.href = `/post/${board.no}`)
+      : openModal;
+  };
+
   return (
-    <Link
-      to={isNaN(board.target) ? `?spec/${board.no}` : `post/${board.no}`}
-      className={cx(style)}
-      onClick={openModal}
-    >
+    <div className={cx(style)} onClick={handleOnClick()}>
       <div className={'img'}>
         {board.photoUrl !== null ? (
-          <Img
-            src={'https://d2ffbnf2hpheay.cloudfront.net/' + `${board.photoUrl}`}
+          <img
+            src={`https://d2ffbnf2hpheay.cloudfront.net/${board.photoUrl}`}
+            alt="boardImg"
           />
         ) : (
-          <div className={'logo'}>
-            <Img src={'/img/logo.png'} />
-          </div>
+          <Logo />
         )}
       </div>
       <div className={'info'}>
@@ -286,6 +287,13 @@ export default function NewPost({ page, board }: Props) {
         </div>
       </div>
       <div className={'mark-box'}>{markBox}</div>
-    </Link>
+    </div>
   );
 }
+
+const Logo = styled.div`
+  width: 100%;
+  height: 100%;
+  background: white url('/img/logo.png') no-repeat center/cover;
+  background-size: 30%;
+`;
