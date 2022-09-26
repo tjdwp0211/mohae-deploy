@@ -20,7 +20,7 @@ function Input(props: Props) {
     ) {
       dispatch(setPrice('1,000,000'));
     }
-    if (title.length > 16) {
+    if (title.length > 15) {
       dispatch(setTitle(title.slice(0, 15)));
     }
     if (summary.length > 100) {
