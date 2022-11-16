@@ -1,22 +1,14 @@
 /** @format */
-
-import { Img, Box, Btn } from '../../../components';
-import React, {
-  ButtonHTMLAttributes,
-  Dispatch,
-  SetStateAction,
-  useState,
-} from 'react';
-
-import axios from 'axios';
-
-import { open_login } from '../../../redux/modal/reducer';
+import { Img, Box } from '../../../components';
+import React, { useState } from 'react';
+import { open_login } from '../../../redux/specModal/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../redux/root';
 import { useLocation } from 'react-router-dom';
-import { ENDPOINT } from '../../../utils/ENDPOINT';
 import { loginCheck } from '../../../utils/loginCheck';
-import { customAxios } from '../../../apis/instance';
+import { login } from '../../../apis/auth';
+import { setToken } from '../../../utils/getToken';
+import { ACCESS_TOKEN, REFESH_TOKEN } from '../../../consts/tokenKey';
 
 interface Props {
   text: {
@@ -36,12 +28,16 @@ interface Props {
   setFindPasswordView: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+const result = 0;
+
 export default function Register({ text, setFindPasswordView }: Props) {
   const [inputValue, setInputValue] = useState({
     id: '',
     password: '',
   });
-  const isOpenLogin = useSelector((state: RootState) => state.modal.openLogin);
+  const isOpenLogin = useSelector(
+    (state: RootState) => state.specModal.openLogin,
+  );
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -62,24 +58,11 @@ export default function Register({ text, setFindPasswordView }: Props) {
   const requestLogin = (e: any) => {
     e.preventDefault();
 
-    customAxios
-      .post(
-        `${ENDPOINT}auth/signin`,
-        { email: inputValue.id, password: inputValue.password },
-        {
-          headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        },
-      )
+    login({ email: inputValue.id, password: inputValue.password })
       .then(res => {
         if (res.data.statusCode >= 200 && res.data.statusCode <= 204) {
-          sessionStorage.setItem('access_token', res.data.response.accessToken);
-          sessionStorage.setItem(
-            'refresh_token',
-            res.data.response.refreshToken,
-          );
+          setToken(ACCESS_TOKEN, res.data.response.accessToken);
+          setToken(REFESH_TOKEN, res.data.response.refreshToken);
           window.location.replace(location.pathname);
           loginCheck();
 
@@ -102,7 +85,7 @@ export default function Register({ text, setFindPasswordView }: Props) {
     <form onSubmit={requestLogin}>
       <div className={'input'}>
         <div className={'icon'}>
-          <Img src={'/img/id.png'} />
+          <Img src={'/img/id.png'} alt="id-input-icon" />
         </div>
         <input
           placeholder={text.placeholder.id}
@@ -112,7 +95,7 @@ export default function Register({ text, setFindPasswordView }: Props) {
       </div>
       <div className={'input'}>
         <div className={'icon'}>
-          <Img src={'/img/password.png'} />
+          <Img src={'/img/password.png'} alt="password-input-icon" />
         </div>
         <input
           placeholder={text.placeholder.pw}

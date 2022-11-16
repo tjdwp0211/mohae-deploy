@@ -1,79 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { requestCreate, requestEdit } from '../../apis/createAndEditPost';
+import useRefactorPostingData from '../../customhook/useRefactorPostingData';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { customAxios } from '../../apis/instance';
-import setInterceptors from '../../apis/common/setInterceptors';
-import EmptySpinner from '../../components/emptySpinner/EmptySpinner';
-import useRefactorPostingData from '../../customhook/useRefactorPostingData';
-import { setForEdit, setLoading } from '../../redux/createpost/reducer';
-import { setInitialState } from '../../redux/createpost/reducer';
+import {
+  setInfoBeforeEdit,
+  setLoading,
+  setInitialState,
+} from '../../redux/createpost/reducer';
 import { RootState } from '../../redux/root';
-import { ENDPOINT } from '../../utils/ENDPOINT';
-import getToken from '../../utils/getToken';
+import { requestGetPostData } from '../../apis/post';
+import { PosterDetails } from '../../types/post/type';
+import { Spinner } from '../../components';
 import Presenter from './Presenter';
-
-interface Props {
-  type: string;
-}
 
 interface StateForEdit {
   [key: string]: string | number | null | string[] | never[];
 }
 
-function CreateAndEditPost({ type }: Props) {
+function CreateAndEditPost() {
   const { no } = useParams();
   const dispatch = useDispatch();
-  const loadingState = useSelector(
-    (state: RootState) => state.createPost.loading,
-  );
-  const form = useSelector((state: RootState) => state.createPost.form);
+  const { loading, form } = useSelector((state: RootState) => state.createPost);
   const refactorReduxData = useRefactorPostingData();
   const [stateForEdit, setStateForEdit] = useState<StateForEdit>();
   const [popupView, setPopupView] = useState(false);
-  const [view, setView] = useState<{ [key: number]: boolean }>({
-    0: false,
-    1: false,
-    2: false,
-  });
-  const [targetChecked, setTargetChecked] = useState<{
-    [key: number]: boolean;
-  }>({ 0: true, 1: false });
+
+  const savePostInfomation = useCallback((info: PosterDetails) => {
+    const cloudFrontURL = 'https://d2ffbnf2hpheay.cloudfront.net/';
+    return {
+      price: String(Number(info.price).toLocaleString()),
+      title: info.title,
+      description: info.description || '',
+      summary: info.summary === null ? '' : info.summary,
+      target: info.target,
+      categoryNo: info.categoryNo,
+      areaNo: info.areaNo,
+      deadline: info.deadline,
+      imgArr:
+        info.boardPhotoUrls !== null
+          ? info.boardPhotoUrls
+              .split(', ')
+              .map((el: string) => cloudFrontURL + el)
+          : [],
+    };
+  }, []);
 
   useEffect(() => {
-    if (type === 'edit') {
-      setInterceptors(customAxios)
-        .get(`${ENDPOINT}boards/${no}`, {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-          },
-        })
+    if (no) {
+      requestGetPostData(Number(no))
         .then(res => {
-          const data = res.data.response.board;
-          const beforeEdit = {
-            price: String(Number(data.price).toLocaleString()),
-            title: data.title,
-            description: data.description,
-            summary: data.summary === null ? '' : data.summary,
-            target: data.target,
-            categoryNo: data.categoryNo,
-            areaNo: data.areaNo,
-            deadline: data.deadline,
-            imgArr:
-              data.boardPhotoUrls !== null && data.boardPhotoUrls !== ''
-                ? data.boardPhotoUrls.split(', ').map((el: any) => {
-                    return 'https://d2ffbnf2hpheay.cloudfront.net/' + el;
-                  })
-                : [],
-          };
-          setStateForEdit(beforeEdit);
-          dispatch(setForEdit(beforeEdit));
-          setTargetChecked(
-            Number(beforeEdit.target) === 1
-              ? { 0: false, 1: true }
-              : { 0: true, 1: false },
+          setStateForEdit(savePostInfomation(res.data.response.board));
+          dispatch(
+            setInfoBeforeEdit(savePostInfomation(res.data.response.board)),
           );
         })
-        .catch(err => console.log('err', err));
+        .catch(_ => alert('알 수 없는 에러 발생.'));
     } else dispatch(setLoading(false));
 
     return () => {
@@ -81,90 +63,49 @@ function CreateAndEditPost({ type }: Props) {
     };
   }, []);
 
-  const requestAxios = (type: string) => {
-    const URL =
-      type === 'create'
-        ? `https://mo-hae.site/boards`
-        : `https://mo-hae.site/boards/${no}`;
-    const config = {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${getToken()}`,
-      },
-    };
-    const axiosPostOrPatch =
-      type === 'create'
-        ? setInterceptors(customAxios).post
-        : setInterceptors(customAxios).patch;
+  const requestForEdit = () => {
+    for (const key in stateForEdit) {
+      if (key !== 'imgArr') {
+        refactorReduxData[key] !== stateForEdit[key]
+          ? form.set(`${key}`, JSON.stringify(refactorReduxData[key]))
+          : form.set(`${key}`, JSON.stringify(null));
+      }
+    }
 
-    axiosPostOrPatch(URL, form, config)
-      .then(res => {
-        setPopupView(true);
-      })
-      .catch(err => {
-        type === 'create' ? alert('작성 실패') : alert('수정 실패');
-      });
+    requestEdit(Number(no), form)
+      .then(_ => setPopupView(true))
+      .catch(_ => alert('수정 실패'));
   };
 
-  const postingAxios = (e: React.MouseEvent, type: string) => {
+  const requestForCreate = () => {
+    for (const key in refactorReduxData) {
+      form.set(`${key}`, JSON.stringify(refactorReduxData[key]));
+    }
+
+    requestCreate(form)
+      .then(_ => setPopupView(true))
+      .catch(_ => alert('작성 실패'));
+  };
+
+  const thereIsNoImg = () => {
+    const file = new File(['logo.png'], 'logo.png', {
+      type: 'image/jpg',
+    });
+    form.append('image', file);
+  };
+
+  const handleAxios = (e: React.MouseEvent) => {
     e.preventDefault();
-
-    if (type === 'edit') {
-      for (const key in stateForEdit) {
-        if (key !== 'imgArr') {
-          refactorReduxData[key] !== stateForEdit[key]
-            ? form.set(`${key}`, JSON.stringify(refactorReduxData[key]))
-            : form.set(`${key}`, JSON.stringify(null));
-        }
-      }
-    } else {
-      for (const key in refactorReduxData) {
-        form.set(`${key}`, JSON.stringify(refactorReduxData[key]));
-      }
-    }
-
-    if (form.getAll('image').length === 0) {
-      const file = new File(['logo.png'], 'logo.png', {
-        type: 'image/jpg',
-      });
-      form.append('image', file);
-    }
-
-    // console.log('price :>> ', form.getAll('price'));
-    // console.log('title :>> ', form.getAll('title'));
-    // console.log('description :>> ', form.getAll('description'));
-    // console.log('target :>> ', form.getAll('target'));
-    // console.log('categoryNo :>> ', form.getAll('categoryNo'));
-    // console.log('deadline :>> ', form.getAll('deadline'));
-    // console.log('areaNo :>> ', form.getAll('areaNo'));
-    // console.log('image :>> ', form.getAll('image'));
-
-    requestAxios(type);
-  };
-
-  const selectBoxClick = (i: number) => {
-    setView({ 0: false, 1: false, 2: false, [i]: !view[i] });
-  };
-
-  const setTargetCheck = (i: number) => {
-    setTargetChecked({ 0: false, 1: false, [i]: !targetChecked[i] });
+    if (form.getAll('image').length === 0) thereIsNoImg();
+    no ? requestForEdit() : requestForCreate();
   };
 
   return (
     <>
-      {!loadingState ? (
-        <Presenter
-          view={view}
-          targetChecked={targetChecked}
-          popupView={popupView}
-          selectBoxClick={selectBoxClick}
-          setTargetCheck={setTargetCheck}
-          postingAxios={postingAxios}
-          type={type}
-        />
+      {!loading ? (
+        <Presenter popupView={popupView} handleAxios={handleAxios} />
       ) : (
-        <EmptySpinner loading />
+        <Spinner size="big" />
       )}
     </>
   );

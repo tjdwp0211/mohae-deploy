@@ -2,7 +2,7 @@
 
 import { css, cx } from '@emotion/css';
 import { Img, Box, Profile, Category, BasicModal, Btn } from '../index';
-import Slide from '../../pages/mypage/mypage/Slide';
+import { PostSlide, Slide } from '../../pages/mypage/components/MyPage';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/root';
 import getToken from '../../utils/getToken';
@@ -19,7 +19,8 @@ import {
   get_user_info,
   setInitialState as setInitialStateMypageProfile,
 } from '../../redux/mypage/reducer';
-import ReportModal from '../../components/modal/ReportModal';
+import { ACCESS_TOKEN } from '../../consts/tokenKey';
+import { handelReportModal } from '../../redux/modal/reducer';
 
 interface Props {
   userNo: number;
@@ -31,10 +32,9 @@ export default function ModalProfile(props: Props) {
   const { userNo, view, reset } = props;
   const userInfo = useSelector((state: RootState) => state.mypage.user.profile);
   const posts = useSelector((state: RootState) => state.spec);
-  const [reportModalView, setReportModalView] = useState(false);
   const dispatch = useDispatch();
   const userInfoInToken = useSelector((state: RootState) => state.user.user);
-  const token = getToken() || null;
+  const token = getToken(ACCESS_TOKEN);
   const checkSelf = String(userInfoInToken?.userNo === userNo);
   const take: any = {
     true: 5,
@@ -117,7 +117,7 @@ export default function ModalProfile(props: Props) {
   };
 
   const handleReportModalView = () => {
-    setReportModalView(prev => !prev);
+    dispatch(handelReportModal('user'));
   };
 
   useEffect(() => {
@@ -171,7 +171,10 @@ export default function ModalProfile(props: Props) {
                 <div className={'row btns'}>
                   <div>
                     <Btn white onClick={handleReportModalView}>
-                      <Img src={'/img/report-main.png'} />
+                      <Img
+                        src={'/img/report-main.png'}
+                        alt="open-user-report-modal"
+                      />
                     </Btn>
                   </div>
                 </div>
@@ -180,19 +183,22 @@ export default function ModalProfile(props: Props) {
                 <div className={'row info-box '}>
                   <div className={'column item'}>
                     <div className={'icon'}>
-                      <Img src={'/img/university.png'} />
+                      <Img
+                        src={'/img/university.png'}
+                        alt="user-university-icon"
+                      />
                     </div>
                     <span>{(userInfo && userInfo.schoolName) || '-'}</span>
                   </div>
                   <div className={'column item'}>
                     <div className={'icon'}>
-                      <Img src={'/img/study.png'} />
+                      <Img src={'/img/study.png'} alt="user-major-icon" />
                     </div>
                     <span>{(userInfo && userInfo.majorName) || '-'}</span>
                   </div>
                   <div className={'column item'}>
                     <div className={'icon'}>
-                      <Img src={'/img/post.png'} />
+                      <Img src={'/img/post.png'} alt="current-poster-count" />
                     </div>
                     <div className={'text'}>
                       <span>{`${text.boards} ${
@@ -208,6 +214,7 @@ export default function ModalProfile(props: Props) {
                             ? '/img/heart-filled-main.png'
                             : '/img/heart-main.png'
                         }
+                        alt="user-like-icon"
                       />
                     </div>
                     <div className={'text'}>
@@ -234,36 +241,30 @@ export default function ModalProfile(props: Props) {
             </div>
             <div className={'section'}>
               <div className={'title'}>{'해줄래요 이력'}</div>
-              <Slide
+              <PostSlide
                 outsideBtn
                 viewNumber={4}
                 items={posts.profileToHelp}
                 action={actions.toHelp}
                 marginRight={16}
                 checkSelf={checkSelf}
-                linkTo={'toPosting'}
               />
             </div>
             <div className={'section'}>
               <div className={'title'}>{'받을래요 이력'}</div>
-              <Slide
+              <PostSlide
                 outsideBtn
                 viewNumber={4}
                 items={posts.profileHelpMe}
                 action={actions.helpMe}
                 marginRight={16}
                 checkSelf={checkSelf}
-                linkTo={'toPosting'}
+                isHelpPost
               />
             </div>
           </div>
         </div>
       </BasicModal>
-      <ReportModal
-        user
-        visible={reportModalView}
-        close={handleReportModalView}
-      />
     </>
   );
 }

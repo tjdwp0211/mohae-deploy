@@ -1,9 +1,7 @@
-/** @format */
-
 import { configureStore } from '@reduxjs/toolkit';
-import mainReducer from './main/reducer';
 import userReducer from './user/reducer';
 import mypageReducer from './mypage/reducer';
+import specModalReducer from './specModal/reducer';
 import modalReducer from './modal/reducer';
 import specReducer from './spec/reducer';
 import filterReducer from './filter/reducer';
@@ -16,8 +14,8 @@ import commentReducer from './comment/reducer';
 export const store = configureStore({
   reducer: {
     user: userReducer,
-    main: mainReducer,
     mypage: mypageReducer,
+    specModal: specModalReducer,
     modal: modalReducer,
     spec: specReducer,
     filter: filterReducer,

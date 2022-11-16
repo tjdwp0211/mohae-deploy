@@ -2,7 +2,6 @@
 
 import { css, cx } from '@emotion/css';
 import styled from '@emotion/styled';
-import { profile } from 'console';
 import { useState } from 'react';
 import { shadow, radius } from '../../styles';
 import Img from '../img/Img';
@@ -86,7 +85,7 @@ function ProfileBox(props: Props) {
       {isOpen && (
         <ChangeOption>
           <Close onClick={() => setIsOpen(false)}>
-            <Img src="/img/close.png" />
+            <Img src="/img/close.png" alt="modal-close" />
           </Close>
           <Option>
             <Input

@@ -4,12 +4,16 @@ import { css, cx } from '@emotion/css';
 import { color, shadow } from '../../style/palette';
 import { Dispatch, ReactElement, SetStateAction } from 'react';
 import { Img, Btn } from '../../../components';
-import { open_login, open_register_modal } from '../../../redux/modal/reducer';
+import {
+  open_login,
+  open_register_modal,
+} from '../../../redux/specModal/reducer';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../redux/root';
 import { Link } from 'react-router-dom';
 import getToken from '../../../utils/getToken';
 import { decodeToken } from 'react-jwt';
+import { ACCESS_TOKEN } from '../../../consts/tokenKey';
 
 type Props = {
   [key: string]: any;
@@ -27,7 +31,7 @@ export default function Header({ setSnapPageNumber }: Props): ReactElement {
     login: '로그인',
     sir: '님',
   };
-  const TOKEN = getToken();
+  const TOKEN = getToken(ACCESS_TOKEN);
   const tokenInfo: Props = decodeToken<any>(TOKEN);
   const userInfo: { [key: string]: any } = {
     nickname: TOKEN !== '' && tokenInfo.nickname,
@@ -68,6 +72,7 @@ export default function Header({ setSnapPageNumber }: Props): ReactElement {
                 'https://d2ffbnf2hpheay.cloudfront.net/' + user.photo_url) ||
               '/img/profile.png'
             }
+            alt="user-profile"
           />
         </div>
       </div>
@@ -81,7 +86,7 @@ export default function Header({ setSnapPageNumber }: Props): ReactElement {
         to={'/'}
         onClick={() => setSnapPageNumber && setSnapPageNumber(0)}
       >
-        <Img src={'/img/logo.png'} />
+        <Img src={'/img/logo.png'} alt="mo-hae-logo-link-to-main" />
       </Link>
       <div className={'button-wrapper'}>
         <button className={'menu'}>
@@ -102,7 +107,7 @@ export default function Header({ setSnapPageNumber }: Props): ReactElement {
           </Link>
         </button>
 
-        {getToken() !== '' ? userInfoBtn : loginButtons}
+        {getToken(ACCESS_TOKEN) !== '' ? userInfoBtn : loginButtons}
       </div>
     </div>
   );

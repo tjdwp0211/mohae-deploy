@@ -1,31 +1,24 @@
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import { css, cx } from '@emotion/css';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from '@emotion/styled';
 import { color, radius, shadow } from '../../../styles';
-import { Btn, Img, Popup } from '../../../components';
+import { Btn, Img } from '../../../components';
 import { RootState } from '../../../redux/root';
 import { ENDPOINT } from '../../../utils/ENDPOINT';
-import axios from 'axios';
 import { customAxios } from '../../../apis/instance';
-import setInterceptors from '../../../apis/common/setInterceptors';
+import { handlePopup } from '../../../redux/modal/reducer';
 
 interface Object {
   [key: string]: any;
 }
 
-interface PopupInfo {
-  view: boolean;
-  message: string;
-}
 interface Props {
   [key: string]: any;
-  setPopupInfo: Dispatch<
-    SetStateAction<{ register: PopupInfo; findPassword: PopupInfo }>
-  >;
 }
 
-export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
+export default function SelectInfo({ setPart }: Props) {
+  const dispatch = useDispatch();
   const [open, setOpen] = useState<Object>({
     one: false,
     two: false,
@@ -63,6 +56,20 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
     });
   };
 
+  const popupOnClick = () => {
+    dispatch(handlePopup());
+    setPart(0);
+  };
+  const popupContents = {
+    text: '회원 가입이 완료 되었습니다.',
+    children: (
+      <BtnImgWrapper>
+        <Btn main onClick={popupOnClick}>
+          닫기
+        </Btn>
+      </BtnImgWrapper>
+    ),
+  };
   const text: { [key: string]: any } = {
     label: {
       mail: '이메일',
@@ -185,10 +192,12 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
       })
       .then(res => {
         if (res.data.statusCode >= 200 && res.data.statusCode <= 204) {
-          setPopupInfo({
-            ...popupInfo,
-            register: { ...popupInfo.register, view: true },
-          });
+          dispatch(
+            handlePopup({
+              text: popupContents.text,
+              children: popupContents.children,
+            }),
+          );
         } else {
           alert('다시 가입 해주세요');
         }
@@ -208,10 +217,12 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
       })
       .then(res => {
         if (res.data.statusCode >= 200 && res.data.statusCode <= 204) {
-          setPopupInfo({
-            ...popupInfo,
-            register: { ...popupInfo.register, view: true },
-          });
+          dispatch(
+            handlePopup({
+              text: popupContents.text,
+              children: popupContents.children,
+            }),
+          );
         } else {
           alert('다시 가입 해주세요');
         }
@@ -377,7 +388,7 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
                       )}
                     </PlaceHolder>
                     <Arrow>
-                      <Img src="/img/arrow-down-dark3.png" />
+                      <Img src="/img/arrow-down-dark3.png" alt="info-opener" />
                     </Arrow>
                   </SelectButton>
                   <Option>
@@ -424,7 +435,7 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
                     </span>
                   </PlaceHolder>
                   <Arrow>
-                    <Img src="/img/arrow-down-dark3.png" />
+                    <Img src="/img/arrow-down-dark3.png" alt="info-opener" />
                   </Arrow>
                   <Option>
                     <List>
@@ -459,7 +470,7 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
                     </span>
                   </PlaceHolder>
                   <Arrow>
-                    <Img src="/img/arrow-down-dark3.png" />
+                    <Img src="/img/arrow-down-dark3.png" alt="info-opener" />
                   </Arrow>
                   <Option>
                     <List>
@@ -497,7 +508,10 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
                             >
                               {el}
                               <CloseButton onClick={() => onCategoryDelete(el)}>
-                                <Img src="/img/close-dark2.png" />
+                                <Img
+                                  src="/img/close-dark2.png"
+                                  alt="info-opener"
+                                />
                               </CloseButton>
                             </Category>
                           </CategoryWrapper>
@@ -505,7 +519,7 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
                       : text.placeholder.major}
                   </PlaceHolder>
                   <Arrow>
-                    <Img src="/img/arrow-down-dark3.png" />
+                    <Img src="/img/arrow-down-dark3.png" alt="info-opener" />
                   </Arrow>
                   <CategoryOption>
                     <div className={'sub'}>
@@ -551,6 +565,12 @@ export default function SelectInfo({ popupInfo, setPopupInfo }: Props) {
     </div>
   );
 }
+
+const BtnImgWrapper = styled.button`
+  width: 74px;
+  height: 43px;
+`;
+
 const DemoSelectBox = styled.div`
   ${radius[6]};
   ${shadow.normal};

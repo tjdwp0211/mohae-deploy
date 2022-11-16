@@ -1,4 +1,5 @@
 import React from 'react';
+
 export const FirstArticle = () => {
   return (
     <>
@@ -330,4 +331,3 @@ export const ThirdArticle = () => {
     </>
   );
 };
-

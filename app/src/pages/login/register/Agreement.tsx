@@ -83,9 +83,7 @@ const Agreement = ({
     agreementContentsAllClose();
   };
 
-  useEffect(() => {
-    onAllCheck();
-  }, [allCheck]);
+  useEffect(onAllCheck, [allCheck]);
 
   return (
     <Wrapper>
@@ -105,7 +103,7 @@ const Agreement = ({
       <CheckItem>
         {allCheck ? (
           <CheckDone onClick={() => setAllCheck(!allCheck)}>
-            <Img src={'/img/check.png'} />
+            <Img src={'/img/check.png'} alt="checking-icon" />
           </CheckDone>
         ) : (
           <CheckBox onClick={() => setAllCheck(!allCheck)} />

@@ -1,50 +1,55 @@
 import styled from '@emotion/styled';
 import Img from '../img/Img';
-import decodingToken from '../../utils/decodingToken';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/root';
 import { setCommentArr } from '../../redux/comment/reducer';
 import { deleteReply } from '../../apis/replies';
+import { ReplierProps } from '../../types/replies/type';
+import { handelReportModal } from '../../redux/modal/reducer';
 
-interface Props {
-  commentIndex: number;
-  handleModalView: () => void;
-  replyIndex: number;
-}
-
-const Replier = (props: Props) => {
-  const { handleModalView, commentIndex, replyIndex } = props;
-  const userInfo = useSelector((state: RootState) => state.user.user);
-  const [detailsView, setDetailsView] = useState(false);
+function Replier(props: ReplierProps) {
   const dispatch = useDispatch();
-  const commentList = useSelector((state: RootState) => state.comment.data);
-  const { replyNo, replyWriterNo } = useSelector(
-    (state: RootState) => state.comment.data[commentIndex].replies[replyIndex],
-  );
-  const { commentNo } = useSelector(
-    (state: RootState) => state.comment.data[commentIndex],
-  );
+  const { commentIndex, replyIndex, handleEditingButton } = props;
+  const { replyNo, replyWriterNo, commentList, commentNo, userInfo } =
+    useSelector((state: RootState) => ({
+      userInfo: state.user.user,
+      commentList: state.comment.data,
+      commentNo: state.comment.data[commentIndex].commentNo,
+      replyNo: state.comment.data[commentIndex].replies[replyIndex].replyNo,
+      replyWriterNo:
+        state.comment.data[commentIndex].replies[replyIndex].replyWriterNo,
+    }));
+  const [detailsView, setDetailsView] = useState(false);
+
+  const reportModalOpen = () => {
+    dispatch(handelReportModal('user'));
+  };
 
   const createReportBtn = () => {
     return replyWriterNo === userInfo?.userNo ? (
       <IconWrapper>
-        <Img src="/img/report-light1.png" />
+        <Img src="/img/report-light1.png" alt="reply-report-disable" />
       </IconWrapper>
     ) : (
-      <IconWrapper onClick={handleModalView}>
-        <Img src="/img/report-main.png" />
+      <IconWrapper onClick={reportModalOpen}>
+        <Img src="/img/report-main.png" alt="reply-report-able" />
       </IconWrapper>
     );
   };
 
-  const handleDeailsView = () => {
+  const handleDetailsView = () => {
     setDetailsView(!detailsView);
   };
 
+  const editButtonClick = () => {
+    handleEditingButton();
+    handleDetailsView();
+  };
+
   const deleteReplyRequest = () => {
-    deleteReply({ no: commentNo, replyNo: replyNo }).then(res => {
-      const newCommentArr = commentList.filter((el, i) => {
+    deleteReply({ no: commentNo, replyNo: replyNo }).then(_ => {
+      const newCommentArr = commentList.filter((_, i) => {
         return i !== commentIndex;
       });
 
@@ -67,8 +72,8 @@ const Replier = (props: Props) => {
         </div>
         {replyWriterNo === userInfo?.userNo && (
           <div className="right">
-            <IconWrapper onClick={handleDeailsView}>
-              <Img src="/img/group.svg" />
+            <IconWrapper onClick={handleDetailsView}>
+              <Img src="/img/group.svg" alt="reply-details-view" />
             </IconWrapper>
           </div>
         )}
@@ -77,16 +82,16 @@ const Replier = (props: Props) => {
         <>
           <RelativeWrapper>
             <MoreDetails>
-              <span>수정하기</span>
+              <span onClick={editButtonClick}>수정하기</span>
               <span onClick={deleteReplyRequest}>삭제하기</span>
             </MoreDetails>
           </RelativeWrapper>
-          <Overlay onClick={handleDeailsView} />
+          <Overlay onClick={handleDetailsView} />
         </>
       )}
     </>
   );
-};
+}
 
 export default Replier;
 

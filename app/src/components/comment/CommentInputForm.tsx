@@ -1,28 +1,31 @@
 import styled from '@emotion/styled';
-import React, { useRef, useState } from 'react';
-import useResizeTextArea from '../../customhook/useResizeTextArea';
-import Img from '../img/Img';
+import React, { useState } from 'react';
 import { createComment } from '../../apis/comment';
-import { Btn } from '../button';
-import { color } from '../../styles';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAddCommentArr } from '../../redux/comment/reducer';
 import { RootState } from '../../redux/root';
+import CommentInput from '../input/comment/CommentInput';
+import { CommentInputFormProps, ErrorState } from '../../types/comment/type';
+import { handlePopup } from '../../redux/modal/reducer';
 
-interface Props {
-  handleModalView: () => void;
-}
-
-const CommentInputForm = (props: Props) => {
-  const { handleModalView } = props;
+function CommentInputForm({ popupContents }: CommentInputFormProps) {
+  const { text, children } = popupContents;
   const [comment, setComment] = useState<string>('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const resizeTextArea = useResizeTextArea(textareaRef);
   const { no } = useParams();
   const dispatch = useDispatch();
   const userInfo = useSelector((state: RootState) => state.user.user);
   const commentList = useSelector((state: RootState) => state.comment.data);
+  const [errorState, setErrorState] = useState<ErrorState>({
+    message: '댓글 작성에 실패하였습니다.',
+    errorOccurred: false,
+  });
+
+  const handleErrorState = (occurs: boolean) => {
+    setErrorState(prev => {
+      return { ...prev, errorOccurred: occurs };
+    });
+  };
 
   const handleChangeComment = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.target.value);
@@ -35,12 +38,12 @@ const CommentInputForm = (props: Props) => {
   };
 
   const handleSubmit = async () => {
-    if (comment.length) {
+    if (0 < comment.length && comment.length < 500) {
       try {
         await createComment({
           no: Number(no),
           body: { content: comment },
-        }).then(res => {
+        }).then(_ => {
           const newComment = {
             commentContent: comment,
             commentCreatedAt: `${today.year}년 ${
@@ -54,13 +57,14 @@ const CommentInputForm = (props: Props) => {
             replies: [],
           };
           dispatch(setAddCommentArr(newComment));
-          handleModalView();
+          dispatch(handlePopup({ text: text, children: children }));
+          handleErrorState(false);
         });
         setComment('');
       } catch (err) {
-        console.log(err);
+        alert('알 수 없는 에러가 발생하였습니다.');
       }
-    }
+    } else handleErrorState(true);
   };
 
   return (
@@ -69,26 +73,17 @@ const CommentInputForm = (props: Props) => {
         <span>댓글</span>
         <span>({commentList.length})</span>
       </CommentCounter>
-      <FormContainer>
-        <textarea
-          ref={textareaRef}
-          onKeyUp={resizeTextArea}
-          onChange={handleChangeComment}
-          placeholder="댓글을 입력해 주세요. (최대 500자)"
-          value={comment}
-        />
-        <div className="write-btn">
-          <Btn main onClick={handleSubmit}>
-            <p>작성</p>
-            <div className="write-img">
-              <Img src="/img/write.png" />
-            </div>
-          </Btn>
-        </div>
-      </FormContainer>
+      <CommentInput
+        onSubmit={handleSubmit}
+        onChange={handleChangeComment}
+        value={comment}
+        usedForEdit={false}
+        errorMessage={errorState.message}
+        errorState={errorState.errorOccurred}
+      />
     </Wrapper>
   );
-};
+}
 
 export default CommentInputForm;
 
@@ -97,28 +92,4 @@ const Wrapper = styled.section``;
 const CommentCounter = styled.div`
   border-bottom: 1px solid #e7e7e8;
   padding-bottom: 16px;
-`;
-
-const FormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding-top: 16px;
-  textarea {
-    width: 100%;
-    padding: 16px;
-    background: #ffffff;
-    box-shadow: inset 0px 0px 8px rgba(132, 131, 141, 0.2);
-    border-radius: 6px;
-    margin-bottom: 16px;
-  }
-  button {
-    display: flex;
-    align-items: center;
-    background: ${color.main};
-    box-shadow: 0px 0px 8px rgba(132, 131, 141, 0.5);
-    border-radius: 6px;
-    padding: 12px 25px;
-    color: #fff;
-  }
 `;

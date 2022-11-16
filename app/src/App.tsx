@@ -1,6 +1,4 @@
-/** @format */
-
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 
 import {
   BrowserRouter as Router,
@@ -10,23 +8,38 @@ import {
 } from 'react-router-dom';
 import { injectGlobal } from '@emotion/css';
 import { color, Layout } from './styles';
-import {
-  Board,
-  CreateAndEditPost,
-  HG,
-  Home,
-  MyPage,
-  Post,
-  LoginModal,
-  Spec,
-} from './pages';
-import Edit from './pages/spec/Edit';
-import Visit from './pages/spec/Visit';
-import Inquire from './pages/inquire/inquire';
-import InquireSuccess from './pages/inquire/inquireSuccess';
-import Notice from './pages/faq/notice/Notice';
-import ChangePassword from './pages/login/findPassword/Container';
-import getToken, { getAccessToken } from './utils/getToken';
+import { LoginModal } from './pages';
+import ReportModal from './components/report/Container';
+import { getToken } from './utils/getToken';
+import { ACCESS_TOKEN } from './consts/tokenKey';
+import { Popup, Spinner } from './components';
+
+const Visit = lazy(() => import('./pages/mypage/components/Spec/Visit'));
+const Edit = lazy(() => import('./pages/mypage/components/Spec/Edit'));
+const Inquire = lazy(() => import('./pages/inquire/inquire'));
+const InquireSuccess = lazy(() => import('./pages/inquire/inquireSuccess'));
+const ChangePassword = lazy(
+  () => import('./pages/login/findPassword/Container'),
+);
+const Notice = lazy(() => import('./pages/faq/Notice'));
+const Board = lazy(() =>
+  import('./pages').then(({ Board }) => ({ default: Board })),
+);
+const CreateAndEditPost = lazy(() =>
+  import('./pages').then(({ CreateAndEditPost }) => ({
+    default: CreateAndEditPost,
+  })),
+);
+const Main = lazy(() =>
+  import('./pages').then(({ Main }) => ({ default: Main })),
+);
+const MyPage = lazy(() =>
+  import('./pages').then(({ MyPage }) => ({ default: MyPage })),
+);
+
+const Post = lazy(() =>
+  import('./pages').then(({ Post }) => ({ default: Post })),
+);
 
 injectGlobal`
   * {
@@ -37,7 +50,6 @@ injectGlobal`
     -webkit-box-sizing: border-box;
     box-sizing: border-box; 
     line-height: 170%;
-    /* color: ${color.dark1}; */
   }
   textarea {
     resize: none;
@@ -75,68 +87,72 @@ injectGlobal`
 `;
 
 const App: React.SFC = () => {
-  const token = getAccessToken();
+  const token = getToken(ACCESS_TOKEN);
   const [snapPageNumber, setSnapPageNumber] = useState(0);
   return (
     <Router>
-      <Routes>
-        <Route
-          path={'/'}
-          element={
-            <Layout
-              snapPageNumber={snapPageNumber}
-              setSnapPageNumber={setSnapPageNumber}
-              main
-              component={
-                <Home
-                  snapPageNumber={snapPageNumber}
-                  setSnapPageNumber={setSnapPageNumber}
-                />
-              }
-            />
-          }
-        />
-        <Route path={'/hg'} element={<Layout component={<HG />} />} />
-        <Route
-          path={'/boards/categories/:no'}
-          element={<Layout component={<Board />} />}
-        />
-        <Route
-          path={'/mypage/:no'}
-          element={
-            <Layout
-              component={token ? <MyPage /> : <Navigate replace to="/" />}
-            />
-          }
-        />
-        <Route path={'/spec/:no'} element={<Layout component={<Spec />} />} />
-        <Route path={'/post/:no'} element={<Layout component={<Post />} />} />
-        <Route
-          path={'/create/post'}
-          element={<Layout component={<CreateAndEditPost type={'create'} />} />}
-        />
-        <Route
-          path={'/edit/post/:no'}
-          element={<Layout component={<CreateAndEditPost type={'edit'} />} />}
-        />
-        <Route
-          path={`/support/:name`}
-          element={<Layout component={<Notice />} />}
-        />
-        <Route path={'/inquire'} element={<Layout component={<Inquire />} />} />
-        <Route
-          path={'/success'}
-          element={<Layout component={<InquireSuccess />} />}
-        />
-        <Route
-          path={'/users/password/forget'}
-          element={<Layout component={<ChangePassword />} />}
-        />
-      </Routes>
+      <Suspense fallback={<Spinner size="big" />}>
+        <Routes>
+          <Route
+            path={'/'}
+            element={
+              <Layout
+                snapPageNumber={snapPageNumber}
+                setSnapPageNumber={setSnapPageNumber}
+                main
+                component={
+                  <Main
+                    snapPageNumber={snapPageNumber}
+                    setSnapPageNumber={setSnapPageNumber}
+                  />
+                }
+              />
+            }
+          />
+          <Route
+            path={'/boards/categories/:no'}
+            element={<Layout component={<Board />} />}
+          />
+          <Route
+            path={'/mypage/:no'}
+            element={
+              <Layout
+                component={token ? <MyPage /> : <Navigate replace to="/" />}
+              />
+            }
+          />
+          <Route path={'/post/:no'} element={<Layout component={<Post />} />} />
+          <Route
+            path={'/create/post'}
+            element={<Layout component={<CreateAndEditPost />} />}
+          />
+          <Route
+            path={'/edit/post/:no'}
+            element={<Layout component={<CreateAndEditPost />} />}
+          />
+          <Route
+            path={`/support/:name`}
+            element={<Layout component={<Notice />} />}
+          />
+          <Route
+            path={'/inquire'}
+            element={<Layout component={<Inquire />} />}
+          />
+          <Route
+            path={'/success'}
+            element={<Layout component={<InquireSuccess />} />}
+          />
+          <Route
+            path={'/users/password/forget'}
+            element={<Layout component={<ChangePassword />} />}
+          />
+        </Routes>
+      </Suspense>
       <Visit />
       <Edit />
       <LoginModal />
-      {/* cancel this comment after test*/}
+      <ReportModal />
+      <Popup />
     </Router>
   );
 };

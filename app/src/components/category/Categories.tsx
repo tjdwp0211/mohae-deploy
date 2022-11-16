@@ -1,48 +1,26 @@
 /** @format */
 
 import { cx, css } from '@emotion/css';
-import { keyframes } from '@emotion/react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { color, radius, font, shadow } from '../../styles';
+import { color } from '../../styles';
 import Category from './Category';
+import { categoryList } from '../../consts/listStore';
 
 interface Props {
   num: number;
-  resetPageInfo?: () => void;
 }
 
-export default function Categories({ num, resetPageInfo }: Props) {
-  const categoryList = [
-      '전체',
-      '디자인',
-      'IT / 개발',
-      '사진 / 영상',
-      '기획 / 마케팅',
-      '번역 / 통역',
-      '문서작업',
-      '컨설팅',
-      '법률',
-      '과외 / 레슨',
-      '상담 / 운세',
-      '이벤트',
-      '핸드메이드',
-      '취미',
-      '생활서비스',
-      '기타',
-    ],
-    param = useParams().no,
-    list = categoryList.map((category: string, index: number) => ({
-      name: category,
-      no: index + 1,
-      img: `/img/category-${index}.png`,
-    })),
-    [arr, setArr] = useState(list.map((category, index) => index)),
-    itemsize = 120,
-    margin = num === 7 ? 48 : 24,
-    showNumber = num || 7,
-    [sector, setSector] = useState(0),
-    move = itemsize + margin;
+export default function Categories({ num }: Props) {
+  const param = useParams().no;
+  const [arr, setArr] = useState(
+    categoryList({ shift: false }).map((_, index) => index),
+  );
+  const itemsize = 120;
+  const margin = num === 7 ? 48 : 24;
+  const showNumber = num || 7;
+  const [sector, setSector] = useState(0);
+  const move = itemsize + margin;
 
   const wrapper = () => {
     const row = `${itemsize * 1.09523 + 16}px`;
@@ -70,26 +48,9 @@ export default function Categories({ num, resetPageInfo }: Props) {
       transition: ${time};
       transform: ${translate};
       position: relative;
+      color: #4f4e5c;
     `;
   };
-
-  const shake = keyframes`
-    0% {
-      transform: translateY(0);
-    }
-    10%{
-      transform: translateY(-15px);
-    }
-    20% {
-      transform: translateY(0);
-    }
-    45% {
-      transform: translateY(-10px);
-    }
-    50% {
-      transform: translateY(0);
-    }
-  `;
 
   const style = css`
     @media (max-width: 1200px) {
@@ -145,10 +106,9 @@ export default function Categories({ num, resetPageInfo }: Props) {
         <Category
           key={'first'}
           shape={'circle'}
-          name={list[arr[arr.length - 1]].name}
-          id={list[arr[arr.length - 1]].no}
-          img={list[arr[arr.length - 1]].img}
-          resetPageInfo={resetPageInfo}
+          name={categoryList({ shift: false })[arr[arr.length - 1]].name}
+          id={categoryList({ shift: false })[arr[arr.length - 1]].no}
+          img={categoryList({ shift: false })[arr[arr.length - 1]].img}
         />
       </div>
       {Array(showNumber)
@@ -158,10 +118,9 @@ export default function Categories({ num, resetPageInfo }: Props) {
             <Category
               key={index}
               shape={'circle'}
-              id={list[arr[index]].no}
-              name={list[arr[index]].name}
-              img={list[arr[index]].img}
-              resetPageInfo={resetPageInfo}
+              id={categoryList({ shift: false })[arr[index]].no}
+              name={categoryList({ shift: false })[arr[index]].name}
+              img={categoryList({ shift: false })[arr[index]].img}
             />
           </div>
         ))}
@@ -169,22 +128,23 @@ export default function Categories({ num, resetPageInfo }: Props) {
         <Category
           key={'last'}
           shape={'circle'}
-          id={list[arr[showNumber]].no}
-          name={list[arr[showNumber]].name}
-          img={list[arr[showNumber]].img}
-          resetPageInfo={resetPageInfo}
+          id={categoryList({ shift: false })[arr[showNumber]].no}
+          name={categoryList({ shift: false })[arr[showNumber]].name}
+          img={categoryList({ shift: false })[arr[showNumber]].img}
         />
       </div>
     </div>
   );
 
   useEffect(() => {
-    const originArray = list.map((_, index) => index);
+    const originArray = categoryList({ shift: false }).map((_, index) => index);
     setArr(originArray);
     const updatedArr = [...originArray];
     for (
       let count = 0;
-      count < (Number(param) + categoryList.length - 4) % categoryList.length;
+      count <
+      (Number(param) + categoryList({ shift: false }).length - 4) %
+        categoryList({ shift: false }).length;
       count++
     ) {
       updatedArr.push(updatedArr[0]);
@@ -203,9 +163,9 @@ export default function Categories({ num, resetPageInfo }: Props) {
       }, 500);
     };
     target.disabled = true;
-    setSector(sector + eval(`${target.name}1`));
+    setSector(sector + eval(`${target.id}1`));
     const updatedArr = [...arr];
-    if (target.name === '+') {
+    if (target.id === '+') {
       updatedArr.push(updatedArr[0]);
       updatedArr.shift();
       updateItem(updatedArr);
@@ -219,8 +179,18 @@ export default function Categories({ num, resetPageInfo }: Props) {
   return (
     <div className={cx(style)}>
       <div className={'wrapper'}>{categories}</div>
-      <button className={'btn-arrow prev'} onClick={clickArrowBtn} name="-" />
-      <button className={'btn-arrow next'} onClick={clickArrowBtn} name="+" />
+      <button
+        className={'btn-arrow prev'}
+        onClick={clickArrowBtn}
+        id="-"
+        name="show-previous-category-button"
+      />
+      <button
+        className={'btn-arrow next'}
+        onClick={clickArrowBtn}
+        id="+"
+        name="show-next-category-button"
+      />
     </div>
   );
 }

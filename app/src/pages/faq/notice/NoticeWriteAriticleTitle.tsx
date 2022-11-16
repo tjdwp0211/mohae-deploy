@@ -1,7 +1,6 @@
 import React from 'react';
 import { css, cx } from '@emotion/css';
 import { Img } from '../../../components';
-import { EditorState } from 'draft-js';
 
 interface Props {
   form: {
@@ -55,7 +54,7 @@ const articleTitle = ({ form, setForm, onSubmit }: Props) => {
             padding-left: 8px;
           `)}
         >
-          <Img src="/img/write.png" />
+          <Img src="/img/write.png" alt="write" />
         </div>
       </button>
     </div>

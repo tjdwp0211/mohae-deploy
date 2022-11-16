@@ -1,6 +1,6 @@
 /** @format */
 
-import { Img, FocusBar, Popup, Btn } from '../../components';
+import { Img, Popup, Btn } from '../../components';
 import AuthModal from '../../components/modal/AuthModal';
 import { radius, font, color, shadow } from '../../styles';
 import { css, cx } from '@emotion/css';
@@ -14,7 +14,10 @@ import FindPassword from './findPassword/FindPassword';
 import styled from '@emotion/styled';
 
 interface Props {
-  [key: string]: any;
+  text: any;
+  isOpenModal: boolean;
+  part: number;
+  onClick: any;
   setPart: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -49,8 +52,8 @@ export default function Presenter({
       next={onClick.agreement}
     />,
     <PersonalInfo text={text} part={part} next={onClick.finishedInputInfo} />,
-    <SelectInfo popupInfo={popupInfo} setPopupInfo={setPopupInfo} />,
-    <FindPassword popupInfo={popupInfo} setPopupInfo={setPopupInfo} />,
+    <SelectInfo setPart={setPart} />,
+    <FindPassword />,
   ];
 
   const style = css`
@@ -267,7 +270,7 @@ export default function Presenter({
       >
         <div className={cx(style)}>
           <div className={'logo'}>
-            <Img src={'/img/logo.png'} />
+            <Img src={'/img/logo.png'} alt="mo-hae-logo" />
           </div>
           {titleTextAndFocusBarElement()}
           <div className={'container'}>
@@ -275,24 +278,6 @@ export default function Presenter({
           </div>
         </div>
       </AuthModal>
-      {handlePopupInfo().view && (
-        <Popup
-          visible={handlePopupInfo().view}
-          text1={handlePopupInfo().message}
-          overlay={() => handlePopupInfo().close()}
-        >
-          <BtnImgWrapper>
-            <Btn main onClick={() => handlePopupInfo().close()}>
-              닫기
-            </Btn>
-          </BtnImgWrapper>
-        </Popup>
-      )}
     </>
   );
 }
-
-const BtnImgWrapper = styled.button`
-  width: 74px;
-  height: 43px;
-`;

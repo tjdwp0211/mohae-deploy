@@ -6,7 +6,7 @@ import styled from '@emotion/styled';
 import MarkBox from '../markbox/MarkBox';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '../../redux/root';
-import { spec_visit } from '../../redux/modal/reducer';
+import { spec_visit } from '../../redux/specModal/reducer';
 import { getDetailSpec } from '../../redux/spec/reducer';
 import {} from 'react-router-dom';
 
@@ -223,25 +223,16 @@ export default function NewPost({ page, board, linkTo }: Props) {
   );
 
   const markBox = board.isDeadline ? (
-    page === 'inMain' || page === 'inBoard' ? (
-      <MarkBox
-        shape={board && board.target}
-        state={board && board.isDeadline}
-        big
-        hover
-      />
-    ) : (
-      <MarkBox
-        big
-        shape={board && board.target}
-        state={board && board.isDeadline}
-      />
-    )
+    <MarkBox
+      shape={board && board.target}
+      state={board && board.isDeadline}
+      size={'big'}
+    />
   ) : (
     <> </>
   );
   const isOpenSpecVisit = useSelector(
-    (state: RootState) => state.modal.openSpecVisit,
+    (state: RootState) => state.specModal.openSpecVisit,
   );
   const dispatch = useDispatch<AppDispatch>();
 

@@ -1,18 +1,37 @@
-import { css, cx } from '@emotion/css';
-import { Props } from '../button';
+import styled from '@emotion/styled';
+import React from 'react';
+
+interface Props {
+  src: string;
+  id?: string;
+  alt?: string;
+  loading?: 'eager' | 'lazy';
+  onClick?: (e: React.MouseEvent) => void;
+}
 
 function Img(props: Props) {
-  const { src, onClick } = props;
+  const { src, alt, loading, onClick } = props;
 
-  const commonStyle = css`
-    width: 100%;
-    height: 100%;
-    background: no-repeat center/contain url(${String(src)});
-  `;
-
-  const show = () => <div onClick={onClick} className={cx(commonStyle)} />;
-
-  return show();
+  return (
+    <Container onClick={onClick}>
+      <source srcSet={src} type="image/avif" />
+      <source srcSet={src} type="image/webp" />
+      <img src={src} alt={alt} loading={loading} />
+    </Container>
+  );
 }
 
 export default Img;
+
+const Container = styled.picture`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`;

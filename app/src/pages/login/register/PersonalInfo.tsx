@@ -7,9 +7,7 @@ import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../redux/root';
 import { update_regist_info } from '../../../redux/user/reducer';
-import axios from 'axios';
 import { ENDPOINT } from '../../../utils/ENDPOINT';
-import getToken from '../../../utils/getToken';
 import styled from '@emotion/styled';
 import setInterceptors from '../../../apis/common/setInterceptors';
 import { customAxios } from '../../../apis/instance';
@@ -181,31 +179,15 @@ export default function PersonalInfo({ part, next }: Object) {
     setFocus(!focus);
   };
 
-  const clickCompanyHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const target = e.currentTarget.value;
-    setInputValue({ ...inputValue, emailCompany: target });
-    setFocus(false);
-  };
-
   const clickCheck = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     setInterceptors(customAxios)
-      .post(
-        `${ENDPOINT}profile/check-nickname`,
-        {
-          no: null,
-          nickname: inputValue.nickname,
-        },
-        {
-          headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getToken()}`,
-          },
-        },
-      )
+      .post(`${ENDPOINT}profile/check-nickname`, {
+        no: null,
+        nickname: inputValue.nickname,
+      })
       .then(res => {
         if (res.data.success) {
           setIsValid(true);
@@ -213,6 +195,12 @@ export default function PersonalInfo({ part, next }: Object) {
         }
       })
       .catch(err => alert(err.response.data.error.message));
+  };
+
+  const clickCompanyHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const target = e.currentTarget.value;
+    setInputValue({ ...inputValue, emailCompany: target });
+    setFocus(false);
   };
 
   const clickNext = (e: React.MouseEvent) => {
@@ -299,7 +287,7 @@ export default function PersonalInfo({ part, next }: Object) {
             <button onClick={focusSelect}>{inputValue.emailCompany}</button>
             {selectCompany}
             <button className={'arrow-down'} onClick={focusSelect}>
-              <Img src={'/img/arrow-down-dark3.png'} />
+              <Img src={'/img/arrow-down-dark3.png'} alt="opener" />
             </button>
           </div>
         </li>

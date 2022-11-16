@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import QuestionModal from '../../components/modal/QuestionModal';
 import getToken from '../../utils/getToken';
 import { color } from '../../styles';
+import { ACCESS_TOKEN } from '../../consts/tokenKey';
 
 const Inquire = () => {
   const title = useInput(45);
@@ -25,9 +26,9 @@ const Inquire = () => {
   const [modal, setModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const token = getToken();
+  const token = getToken(ACCESS_TOKEN);
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!token) {
       setModal(true);
       return;
@@ -38,14 +39,13 @@ const Inquire = () => {
 
     try {
       setLoading(true);
-      postQuestion(fileData.formData).then(res => {
-        if (res.data.success) {
-          setLoading(false);
-          navigate('/success');
-        }
-      });
+      const response = await postQuestion(fileData.formData);
+
+      if (response.success) navigate('/success');
     } catch (err: any) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,7 +60,7 @@ const Inquire = () => {
       {loading ? (
         <LoadingWrapper>
           <LoadingImg>
-            <Img src="/img/loading.gif" />
+            <Img src="/img/loading.gif" alt="loading" />
           </LoadingImg>
         </LoadingWrapper>
       ) : (
@@ -100,7 +100,7 @@ const Inquire = () => {
                   })
                 }
               >
-                <Img src="/img/close.png" />
+                <Img src="/img/close.png" alt="close-modal" />
               </CloseImg>
             </FileStorage>
           ) : (
