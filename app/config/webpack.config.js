@@ -162,8 +162,11 @@ module.exports = function (webpackEnv) {
                 },
               ],
               // Adds PostCSS Normalize as the reset css with default options,
+              // 기본 옵션이 있는 재설정 CSS로 PostCSS Normalize를 추가합니다.
               // so that it honors browserslist config in package.json
+              // package.json에서 브라우저 목록 구성을 준수하도록 합니다.
               // which in turn let's users customize the target behavior as per their needs.
+              // 따라서 사용자는 필요에 따라 대상 동작을 사용자 정의할 수 있습니다.
               'postcss-normalize',
             ],
           },
