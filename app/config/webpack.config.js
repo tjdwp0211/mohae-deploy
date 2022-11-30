@@ -64,9 +64,9 @@ const useTypeScript = fs.existsSync(paths.appTsConfig);
 
 // Check if Tailwind config exists
 // 테일윈드 구성이 있는지 확인합니다.
-// const useTailwind = fs.existsSync(
-//   path.join(paths.appPath, 'tailwind.config.js'),
-// );
+const useTailwind = fs.existsSync(
+  path.join(paths.appPath, 'tailwind.config.js'),
+);
 
 // Get the path to the uncompiled service worker (if it exists).
 // 컴파일되지 않은 서비스 작업자의 경로를 가져옵니다(있는 경우).
@@ -76,8 +76,8 @@ const swSrc = paths.swSrc;
 // 스타일 파일 정규식
 const cssRegex = /\.css$/;
 const cssModuleRegex = /\.module\.css$/;
-// const sassRegex = /\.(scss|sass)$/;
-// const sassModuleRegex = /\.module\.(scss|sass)$/;
+const sassRegex = /\.(scss|sass)$/;
+const sassModuleRegex = /\.module\.(scss|sass)$/;
 
 const hasJsxRuntime = (() => {
   if (process.env.DISABLE_NEW_JSX_TRANSFORM === 'true') {
@@ -93,43 +93,32 @@ const hasJsxRuntime = (() => {
 })();
 
 // This is the production and development configuration.
-// 이것은 생산 및 개발 구성입니다.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
-// 그것은 개발자 경험, 빠른 재구축, 최소한의 번들에 초점을 맞추고 있다.
 module.exports = function (webpackEnv) {
   const isEnvDevelopment = webpackEnv === 'development';
   const isEnvProduction = webpackEnv === 'production';
 
   // Variable used for enabling profiling in Production
-  // 프로덕션에서 프로파일링을 활성화하는 데 사용되는 변수
   // passed into alias object. Uses a flag if passed into the build command
-  // alias object로 전달되었습니다. build 명령으로 전달된 경우 플래그 사용
   const isEnvProductionProfile =
     isEnvProduction && process.argv.includes('--profile');
 
   // We will provide `paths.publicUrlOrPath` to our app
-  // 저희는 앱에 'paths.publicUrlOrPath'를 제공할 것입니다..
   // as %PUBLIC_URL% in `index.html` and `process.env.PUBLIC_URL` in JavaScript.
-  // 'index.html' 및 'process.env'에서 %PUBLIC_URL%로 표시됩니다.JavaScript의 PUBLIC_URL'
   // Omit trailing slash as %PUBLIC_URL%/xyz looks better than %PUBLIC_URL%xyz.
-  // %PUBLIC_URL%/xyz가 %PUBLIC_URL%xyz보다 더 낫기 때문에 후행 슬래시 생략
   // Get environment variables to inject into our app.
-  // 앱에 삽입할 환경 변수를 가져옵니다.
   const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1));
 
   const shouldUseReactRefresh = env.raw.FAST_REFRESH;
 
   // common function to get style loaders
-  // 스타일 로더를 가져오는 공통 함수
   const getStyleLoaders = (cssOptions, preProcessor) => {
     const loaders = [
       isEnvDevelopment && require.resolve('style-loader'),
       isEnvProduction && {
         loader: MiniCssExtractPlugin.loader,
         // css is located in `static/css`, use '../../' to locate index.html folder
-        // css는 'static/messages'에 있습니다. '../../'를 사용하여 index.messages 폴더를 찾습니다.
         // in production `paths.publicUrlOrPath` can be a relative path
-        // 프로덕션에서는 'paths.publicUrlOrPath'가 상대 경로가 될 수 있습니다.
         options: paths.publicUrlOrPath.startsWith('.')
           ? { publicPath: '../../' }
           : {},
@@ -140,35 +129,45 @@ module.exports = function (webpackEnv) {
       },
       {
         // Options for PostCSS as we reference these options twice
-        // 이 옵션을 두 번 참조할 때 PostCSS 옵션
-        // Adds vendor prefixing based on your specified browser support in package.json
-        // package.json에서 지정한 브라우저 지원을 기반으로 벤더 접두사
+        // Adds vendor prefixing based on your specified browser support in
+        // package.json
         loader: require.resolve('postcss-loader'),
         options: {
           postcssOptions: {
             // Necessary for external CSS imports to work
-            // 외부 CSS 가져오기 작동에 필요
+            // https://github.com/facebook/create-react-app/issues/2677
             ident: 'postcss',
             config: false,
-            plugins: [
-              'postcss-flexbugs-fixes',
-              [
-                'postcss-preset-env',
-                {
-                  autoprefixer: {
-                    flexbox: 'no-2009',
-                  },
-                  stage: 3,
-                },
-              ],
-              // Adds PostCSS Normalize as the reset css with default options,
-              // 기본 옵션이 있는 재설정 CSS로 PostCSS Normalize를 추가합니다.
-              // so that it honors browserslist config in package.json
-              // package.json에서 브라우저 목록 구성을 준수하도록 합니다.
-              // which in turn let's users customize the target behavior as per their needs.
-              // 따라서 사용자는 필요에 따라 대상 동작을 사용자 정의할 수 있습니다.
-              'postcss-normalize',
-            ],
+            plugins: !useTailwind
+              ? [
+                  'postcss-flexbugs-fixes',
+                  [
+                    'postcss-preset-env',
+                    {
+                      autoprefixer: {
+                        flexbox: 'no-2009',
+                      },
+                      stage: 3,
+                    },
+                  ],
+                  // Adds PostCSS Normalize as the reset css with default options,
+                  // so that it honors browserslist config in package.json
+                  // which in turn let's users customize the target behavior as per their needs.
+                  'postcss-normalize',
+                ]
+              : [
+                  'tailwindcss',
+                  'postcss-flexbugs-fixes',
+                  [
+                    'postcss-preset-env',
+                    {
+                      autoprefixer: {
+                        flexbox: 'no-2009',
+                      },
+                      stage: 3,
+                    },
+                  ],
+                ],
           },
           sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
         },
@@ -196,8 +195,7 @@ module.exports = function (webpackEnv) {
 
   return {
     target: ['browserslist'],
-    // mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
-    mode: 'production',
+    mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     // Stop compilation early in production
     bail: isEnvProduction,
     devtool: isEnvProduction
