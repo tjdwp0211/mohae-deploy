@@ -196,7 +196,7 @@ const Container = styled.div`
           * {
             display: inline-block;
           }
-          > :nth-child(1) {
+          > :nth-of-type(1) {
             font-size: 22px;
             line-height: 170%;
             font-family: 'Bold';
@@ -278,7 +278,7 @@ const Container = styled.div`
       display: flex;
       justify-content: center;
       align-items: center;
-      > :not(:last-child) {
+      > :not(:last-of-type) {
         margin-right: 8px;
       }
     }
@@ -286,7 +286,7 @@ const Container = styled.div`
       width: 748px;
       height: fit-content;
 
-      > :not(:last-child) {
+      > :not(:last-of-type) {
         margin-bottom: 32px;
       }
       > .section {
